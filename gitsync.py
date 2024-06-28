@@ -3,9 +3,9 @@ import sys
 
 
 
-def Commit_Dates(repo: Repo, remote: Remote) -> bool:
+def Commit_Dates(repo: Repo, remote: Remote) -> list[int]:
     """`Return`: `Tuple(int)` a tuple of two integer elements reperentation of commit date.
-    Where the first element is `Local_`Commit_Date`` and the second element is `Remote_Commit_Date`
+    Where the first element is `Local_Commit_Date` and the second element is `Remote_Commit_Date`
     """
     
     remote.fetch()
@@ -13,7 +13,7 @@ def Commit_Dates(repo: Repo, remote: Remote) -> bool:
     last_commit_local = repo.head.commit.committed_date
     last_commit_remote = remote.refs[0].commit.committed_date 
 
-    return (last_commit_local,last_commit_remote)
+    return [last_commit_local,last_commit_remote]
 
 
 if __name__ == "__main__":
@@ -68,7 +68,6 @@ if __name__ == "__main__":
 
     repo = Repo(DIR)
     remote = repo.remote("origin")
-    print(repo.git.status())
 
     
     # Fetching and merging changes from Remote Repository
@@ -121,12 +120,16 @@ if __name__ == "__main__":
     diff = repo.index.diff(None)
     flags = {"d":0,"u":len(repo.untracked_files),"m":0} # d = deleted, u = untracked, m = modified
 
+    # Checking for Untracked Files
+    print("\n\033[1;33mChecking for Untracked Files :\033[0m")
+
     for i in repo.untracked_files:
         print(f"\t\033[1;33mUntracked:\033[0m {i}")
     repo.index.add(repo.untracked_files)
 
 
-
+    # Checking for file deletion or modification
+    print("\n\033[1;33mChecking for File Deletion or Modification :\033[0m")
     for i in diff:
         if i.deleted_file:
             flags["d"] += 1
@@ -141,9 +144,11 @@ if __name__ == "__main__":
                 repo.index.add(i.a_path)
         
 
-    msg = "Automatic Commit : " + f"Added {flags["u"]} Files, " if flags["u"] !=0 else "" + "Deleted Files, " if flags["d"] !=0 else "" + "Modified Files " if flags["m"] !=0 else ""
-
-
+    # Generating the commit message
+    msg = "Automatic Commit : "
+    msg += f"Added {flags['u']} Files " if flags["u"] != 0 else ""
+    msg += f"Deleted {flags['d']} Files " if flags["d"] != 0 else ""
+    msg += f"Modified {flags['m']} Files " if flags["m"] != 0 else ""
 
     # Committing Changes
     if flags["d"] > 0 or flags["u"] > 0 or flags["m"] > 0:
@@ -175,10 +180,10 @@ if __name__ == "__main__":
 
         remote.push()
 
-        # status of Local Git Repository
-        print(repo.git.status())
 
     
-    print("\n\t*** WORK SYNCED SUCCESSFULLY ***\n")
+    print("\n\t\033[1;32m*** WORK SYNCED SUCCESSFULLY ***\n\033[0m")
 
     
+
+
