@@ -155,8 +155,7 @@ if __name__ == "__main__":
 
     
 
-    Date_of_Commits = Commit_Dates(repo, remote)
-    L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
+    L_commit, R_commit = repo.head.commit.committed_date, remote.refs[0].commit.committed_date
 
     if L_commit == R_commit:
         print("No changes found.")
