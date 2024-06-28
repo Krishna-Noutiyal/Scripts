@@ -1,7 +1,7 @@
 
 # Scripts Repository
 
-Welcome to the Scripts repository! This repository contains a collection of scripts written in various languages (e.g., Bash, PowerShell, Python) designed to automate tasks and enhance workflows. Some of the scripts include Wordlist Generator, domain scraper, git automation and much more..
+Welcome to the Scripts repository! This repository contains a collection of scripts written in various languages (e.g., Bash, PowerShell, Python) designed to automate tasks and enhance workflows. Some of the scripts include Wordlist Generators, Scrapers, git automation and much more...
 
 ## Table of Contents
 
@@ -27,21 +27,7 @@ To get started with the scripts in this repository, follow these steps:
 
 ## Usage
 
-Refer to the README.md file within each script folder for detailed instructions on how to use the scripts specific to that language.
-
-## Contributing
-
-Contributions are welcome! If you'd like to add new scripts or improve existing ones, follow these steps:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/new-script`).
-3. Make your changes.
-4. Test your changes thoroughly.
-5. Commit your changes (`git commit -am 'Add new script'`).
-6. Push to the branch (`git push origin feature/new-script`).
-7. Create a new Pull Request.
-
-Please ensure your code follows the repository's coding style and includes appropriate documentation within the script's folder.
+Please take a look at the README.md file within each script folder for detailed instructions on using the scripts specific to that language.
 
 ## License
 
