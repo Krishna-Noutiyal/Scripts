@@ -1,5 +1,5 @@
 from git import Repo, Remote, GitCommandError
-import sys
+import sys,os
 
 
 
@@ -143,8 +143,6 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
         print("\nPushing code remote repo...")
 
         remote.push()   
-                
-
         
 
         print("Pushed code to remote repo")
@@ -187,7 +185,7 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
 
         print("\033[1;31mModified files found :\033[0m")
 
-        Modified_Files: list[str] = [item.a_path for item in Diff_Obj]
+        Modified_Files: list[str] = [item.a_path  for item in Diff_Obj if item.change_type == "M"]
 
         print("\n".join(Modified_Files))
         print(*[f"\033[32m\t{item}\033[0m" for item in Modified_Files], sep="\n")
@@ -196,6 +194,7 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
         print("Pushing modified files to staging area...")
 
         repo.index.add(Modified_Files)
+                
     
 
     if UT_FILES is not None or len(Diff_Obj) > 0:
