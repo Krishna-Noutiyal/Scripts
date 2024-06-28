@@ -175,9 +175,6 @@ if __name__ == "__main__":
 
 
         print("\nPushing Code To Remote...")
-
-        # msg = input("\n\tEnter commit message: ")
-
         remote.push()
 
 
