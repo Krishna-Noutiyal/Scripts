@@ -121,7 +121,7 @@ if __name__ == "__main__":
     flags = {"d":0,"u":len(repo.untracked_files),"m":0} # d = deleted, u = untracked, m = modified
 
     # Checking for Untracked Files
-    print("\n\033[1;33mChecking for Untracked Files :\033[0m")
+    print("\n\033[1;34mChecking for Untracked Files :\033[0m")
 
     for i in repo.untracked_files:
         print(f"\t\033[1;33mUntracked:\033[0m {i}")
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 
     # Checking for file deletion or modification
-    print("\n\033[1;33mChecking for File Deletion or Modification :\033[0m")
+    print("\n\033[1;34mChecking for Deleted or Modified Files :\033[0m")
     for i in diff:
         if i.deleted_file:
             flags["d"] += 1
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     else:
         print("Changes found.")
 
-        print("Files to be committed:\n")
+        print("\n\033[1;34mFiles to be committed:\033[0m")
 
         for item in repo.index.diff(remote.refs[0].commit): 
             print(f"\t{item.a_path}")
