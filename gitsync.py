@@ -1,5 +1,4 @@
-from git import Repo, Remote    
-
+from git import Repo, Remote, GitCommandError
 import sys
 
 
@@ -39,20 +38,17 @@ def Check_Untraced_Files(repo:Repo) -> list[str] | None:
 
 if __name__ == "__main__":
 
-    args = sys.argv
-
-
 
     HELP = """
 \033[1;34m\t\t********** GIT AUTOMATION SCRIPT **********\033[0m
 
 \033[1;32m\tDescription:\033[0m
 \tThis script automates the process of committing changes to your local Git repository and 
-\tpushing them to a remote repository. It handles checking for untracked files, 
+\tpushing them to a remote repository. It handles checking for untracked files, modified files,
 \tcommitting changes locally, and ensuring your remote repository is up-to-date.
 
 \033[1;32m\tUsage:\033[0m
-\t\t\033[1;33mpython gitsync.py <Repository_Path>\033[0m
+\t\t\033[1;33mpython gitsync.py <Local_Repository_Path>\033[0m
 
 \033[1;32m\tParameters:\033[0m
 \t\t<Repository_Path> : The path to your local Git repository.
@@ -80,27 +76,30 @@ if __name__ == "__main__":
 \033[1;34m\t********** END OF HELP MESSAGE **********\033[0m
 """
 
+    args = sys.argv
 
 
     if len(args) < 2:
         print(HELP)
         exit()
 
+    
     DIR = args[1]
-
-    # Change Commit Message as you wish
-    MSG = "Automated Commit"
 
     repo = Repo(DIR)
     remote = repo.remote("origin")
     print(repo.git.status())
 
-
-
     # Fetching and merging changes from Remote Repository
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
+    
+
+
+
+
+    # Syncing changes in Local and Remote Repository
     if L_commit == R_commit:
         print("Both Local and Remote Repositories are in SYNC")
         pass
@@ -120,7 +119,15 @@ if __name__ == "__main__":
         # If Changes are found then Merge Changes
         if len(Check_Difference) > 0:  
             print("Merging changes...")
-            repo.git.merge(remote.refs[0])
+            
+            # Merging Changes *** Merge --allow-unrelated-histories ***
+            # if normal merge is not possible and return status is is 128 then use --allow-unrelated-histories
+            try:
+                repo.git.merge(remote.refs[0])
+            except GitCommandError as e:
+                if e.status == 128:
+                    repo.git.merge(remote.refs[0], '--allow-unrelated-histories')
+
             print("Merged Changes successfully")
     
     # If Local Repository is ahead of Remote Repository then Commit and Push
@@ -143,6 +150,10 @@ if __name__ == "__main__":
 
     # Modified files in Local Repository
     Diff_Obj = repo.index.diff(None) # len() can be used
+
+
+    # Change Commit Message as you wish
+    MSG = f"Automated Commit: Added {"New Files" if UT_FILES is not None else ""} {"and" if UT_FILES is not None and len(Diff_Obj) > 0 else ""} {"Modified Files" if len(Diff_Obj) > 0 else None}"
 
 
     if UT_FILES is not None:

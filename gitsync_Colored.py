@@ -1,75 +1,61 @@
-from git import Repo, Remote    
+from git import Repo, Remote, GitCommandError
 import sys
 
-# Function to print colored messages
-def print_colored(text, color_code="0"):
-    print(f"\033[{color_code}m{text}\033[0m")
-
-# Centralized function for different log levels
-def log(message, level="info"):
-    """Prints the message in the specified level and color"""
-    levels = {
-        "info": "1;32",  # Green
-        "warning": "1;33",  # Yellow
-        "error": "1;31",  # Red
-        "status": "1;36",  # Cyan
-        "help": "1;34"  # Blue
-    }
-    color_code = levels.get(level, "0")
-    print_colored(message, color_code)
 
 
-def Commit_Changes(remote: Remote, repo: Repo = None, message: str = None, only_remote: bool = False) -> None:
-    """### Inputs:
-        `repo`: Local Git Repository
-        `remote`: Remote Git Repository
-        `message`: Commit Message
-        `only_remote`: `True` if you want to push to remote repo only, else `False`
 
-        By Default commit is done locally. 
-        If `only_remote` is set to `True`, 
-        Changes are pushed to remote repo only.
-        #### If  `only_remote` is True :
-            \t`repo = None` and `message = None` 
 
-    ### Returns: 
-    `True` if commit is successful, else `False`
-
+def Commit_Dates(repo: Repo, remote: Remote) -> bool:
+    """`Return`: `Tuple(int)` a tuple of two integer elements reperentation of commit date.
+    Where the first element is `Local_`Commit_Date`` and the second element is `Remote_Commit_Date`
     """
     
-    if not only_remote:
-        assert repo is not None
-        assert message is not None
-        repo.index.commit(message)
-    else:
-        remote.push()
-    return True
-
-def Is_ahead(repo: Repo, remote: Remote) -> bool:
-    """Returns `True` if local repo is ahead of remote repo, else `False`."""
+    
     last_commit_local = repo.head.commit.committed_date
-    last_commit_remote = remote.refs[0].commit.committed_date 
-    return True if last_commit_local > last_commit_remote else False
 
-def Check_Untraced_Files(repo: Repo) -> list[str] | None:
-    """Checks if there are any untracked files in the local repository."""
+    # fetches latest changes from remote if origin/main doesn't exist
+    if len(remote.refs) == 0:
+        remote.fetch()
+    last_commit_remote = remote.refs[0].commit.committed_date 
+
+    return (last_commit_local,last_commit_remote)
+
+
+def Check_Untraced_Files(repo:Repo) -> list[str] | None:
+    """### Inputs:
+        `repo`: Local Git Repository
+
+        Checks if there are any untracked files in the local repository
+
+    ### Returns: 
+    `List[str]` of untracked files if any else `none`
+
+    """
     UT_FILES = repo.untracked_files
+
     if len(repo.untracked_files) > 0:
+
         return UT_FILES
+
     return None
 
+
 if __name__ == "__main__":
-    args = sys.argv
+
+
     HELP = """
 \033[1;34m\t\t********** GIT AUTOMATION SCRIPT **********\033[0m
 
 \033[1;32m\tDescription:\033[0m
 \tThis script automates the process of committing changes to your local Git repository and 
-\tpushing them to a remote repository. It handles checking for untracked files, 
+\tpushing them to a remote repository. It handles checking for untracked files, modified files,
 \tcommitting changes locally, and ensuring your remote repository is up-to-date.
+\n\033[1;31mIMPORTANT:\033[0m
+In case the remote repository have a different history than the local repository,
+A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories`\033[0m\n
 
-\033[1;32m\tUsage:\033[0m
-\t\t\033[1;33mpython gitsync.py <Repository_Path>\033[0m
+\033[31m\tUsage:\033[0m
+\t\t\033[1;33mpython gitsync.py <Local_Repository_Path>\033[0m
 
 \033[1;32m\tParameters:\033[0m
 \t\t<Repository_Path> : The path to your local Git repository.
@@ -96,95 +82,166 @@ if __name__ == "__main__":
 
 \033[1;34m\t********** END OF HELP MESSAGE **********\033[0m
 """
+
+    args = sys.argv
+
+
     if len(args) < 2:
-        log(HELP, "help")
+        print(HELP)
         exit()
 
+    
     DIR = args[1]
+
     repo = Repo(DIR)
     remote = repo.remote("origin")
-    log(repo.git.status(), "status")
+    print(repo.git.status())
 
     # Fetching and merging changes from Remote Repository
-    if not Is_ahead(repo, remote):
-        log("Checking for changes in Remote Repository...", "warning")
-        log("Remote Repository is up to date", "info")
-        log("Local Repository might be Outdated", "error")
-        log("Fetching Changes...", "warning")
+    Date_of_Commits = Commit_Dates(repo, remote)
+    L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
+
+    
+
+
+
+
+    # Syncing changes in Local and Remote Repository
+    if L_commit == R_commit:
+        print("Both Local and Remote Repositories are in SYNC")
+        pass
+
+    elif L_commit < R_commit:
+        print("Checking for changes in Remote Repository...")
+
+        print("Remote Repository is up to date")
+        print("Local Repository might be Outdated")
+        print("\nFetching Changes...")
 
         remote.fetch()
-
-        log("Fetched Changes successfully", "info")
-
+        print("Fetched Changes successfully")
+        
         Check_Difference = repo.index.diff(remote.refs[0].commit)
 
         # If Changes are found then Merge Changes
-
         if len(Check_Difference) > 0:  
+            print("Merging changes...")
 
-            log("Merging changes...", "warning")
+            # Merging Changes *** Merge --allow-unrelated-histories ***
+            # if normal merge is not possible and return status is is 128 then use --allow-unrelated-histories
+            try:
+                repo.git.merge(remote.refs[0])
+            except GitCommandError as e:
+                if e.status == 128:
+                    repo.git.merge(remote.refs[0], '--allow-unrelated-histories')
 
-            repo.git.merge(remote.refs[0])
-
-            log("Merged Changes successfully", "info")
-            
+            print("Merged Changes successfully")
     
     # If Local Repository is ahead of Remote Repository then Commit and Push
     else:
-        log("Remote Repository is not up to date.", "error")
-        log("Pushing code to remote repo...", "warning")
+        print("Remote Repository is not up to date.")
+        print("\nPushing code remote repo...")
 
-        Commit_Changes(remote, only_remote=True)
+        remote.push()   
+                
 
-        log("Pushed code to remote repo", "info")
-        log("Continuing with Local Repository...", "warning")
+        
+
+        print("Pushed code to remote repo")
+        print("Continuing with Local Repository...")
     
-
-
     # Checking and adding untraced files to staging area ( including commit )
-    log("Checking for untracked files...", "warning")
+    print("Checking for untracked files...")
+
+
+    # New files in Local Repository
     UT_FILES = Check_Untraced_Files(repo)
 
+    # Modified files in Local Repository
+    Diff_Obj = repo.index.diff(None) # len() can be used
+
+
+    # Change Commit Message as you wish
+    MSG = f"Automated Commit: Added {"New Files" if UT_FILES is not None else ""} {"and" if UT_FILES is not None and len(Diff_Obj) > 0 else ""} {"Modified Files" if len(Diff_Obj) > 0 else None}"
+
+
     if UT_FILES is not None:
-        log("Untracked files found:", "error")
+
+        print("\033[1;31mUntracked files found:\033[0m")
 
         print("\n".join(UT_FILES))
+        print(*[f"\033[32m\t{item.a_path}\033[0m" for item in UT_FILES], sep="\n")
 
-        log("Pushing untracked files to staging area...", "warning")
+
+        print("Pushing untracked files to stagging area...")
 
         repo.index.add(UT_FILES)
-        Commit_Changes(remote,repo)
-
 
     else:
-        log("No untracked files found.", "info")
+        print("No untracked files found.")
     
-    log("Checking for file modifications...", "warning")
+    print("Checking for file modifications...")
+
+    # Modified files in Local Repository
+    if len(Diff_Obj) > 0:
+
+        print("\033[1;31mModified files found :\033[0m")
+
+        Modified_Files: list[str] = [item.a_path for item in Diff_Obj]
+
+        print("\n".join(Modified_Files))
+        print(*[f"\033[32m\t{item}\033[0m" for item in Modified_Files], sep="\n")
 
 
-    # assert not repo.is_dirty()
+        print("Pushing modified files to staging area...")
 
-    # Check for changes in Local Repository
-    if not Is_ahead(repo, remote):
-        log("No changes found.", "info")
+        repo.index.add(Modified_Files)
+    
+
+    if UT_FILES is not None or len(Diff_Obj) > 0:
+        print("Committing changes locally...")
+
+
+        repo.index.commit(MSG)
+
+        # status of Local Git Repository
+        print(repo.git.status())
+    
+
+    
+
+
+
+
+    
+    # Again fetching the commit date to check if there are any changes made by above code
+    Date_of_Commits = Commit_Dates(repo, remote)
+    L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
+
+    if L_commit == R_commit:
+        print("No changes found.")
+    
     else:
-        log("Changes found.", "error")
-        log("Files to be committed:\n", "error")
+        print("Changes found.")
 
-        for item in repo.index.diff(remote.refs[0].commit): 
-            log(f"\t{item.a_path} -> {item.b_path}", "info")
+        print("Files to be committed:\n")
 
-        log("\nCommitting changes locally and pushing to remote...", "warning")
+        # Changes between local and remote repository
+        changes = repo.index.diff(remote.refs[0].commit)
+        for item in changes: 
+            print(f"\033[1;32m\t{item.a_path}\033[0m \033[1;31m ->\033[0m \033[1;32m{item.b_path}\033[0m")
 
-        msg = input("\n\tEnter commit message: ")
+        print("\nPushing Code To Remote...")
 
-        # msg = "Automated Commit"
+        # msg = input("\n\tEnter commit message: ")
 
-        log("\nCommitting changes...", "warning")
+        remote.push()
 
-        Commit_Changes(remote, repo, msg)
-        
-        log(repo.git.status(), "status")
+        # status of Local Git Repository
+        print(repo.git.status())
+
     
-    log("\n\t*** WORK SYNCED SUCCESSFULLY ***\n", "info")
+    print("\n\t*** WORK SYNCED SUCCESSFULLY ***\n")
+    # print(args)
 
+    
