@@ -4,10 +4,12 @@ from git import Repo
 
 repo = Repo("./")
 remote = repo.remote()
-# diff = repo.index.diff(remote.refs[0].commit)
+diff = repo.index.diff(remote.refs[0].commit)
 
-print(repo.untracked_files)
+# print(repo.untracked_files)
+for i in diff:
+    print(i.a_path)
 
 
 
-repo.index.commit("Test")
+# repo.index.commit("Test")

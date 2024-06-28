@@ -1,4 +1,4 @@
-from git import Repo, Remote, GitCommandError
+from git import Repo, Remote, GitCommandError, FetchInfo
 import sys
 
 
@@ -8,7 +8,8 @@ def Commit_Dates(repo: Repo, remote: Remote) -> bool:
     Where the first element is `Local_`Commit_Date`` and the second element is `Remote_Commit_Date`
     """
     
-    
+    remote.fetch()
+
     last_commit_local = repo.head.commit.committed_date
     last_commit_remote = remote.refs[0].commit.committed_date 
 
@@ -85,8 +86,6 @@ if __name__ == "__main__":
         print("Remote Repository is up to date")
         print("Local Repository might be Outdated")
         print("\nFetching Changes...")
-
-        remote.fetch()
         print("Fetched Changes successfully")
         
         Check_Difference = repo.index.diff(remote.refs[0].commit)
