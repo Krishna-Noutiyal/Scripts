@@ -5,6 +5,8 @@
     "version": "0.2.0",
     "configurations": [
         
+
+        
         {
             "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
@@ -12,7 +14,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             // "args": "${command:pickArgs}"
-            "args": "S:/C_Plus_Plus"
+            "args": "S:/Scripts"
         }
     ]
 }

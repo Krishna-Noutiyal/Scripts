@@ -3,8 +3,6 @@ import sys
 
 
 
-
-
 def Commit_Dates(repo: Repo, remote: Remote) -> bool:
     """`Return`: `Tuple(int)` a tuple of two integer elements reperentation of commit date.
     Where the first element is `Local_`Commit_Date`` and the second element is `Remote_Commit_Date`
@@ -15,38 +13,6 @@ def Commit_Dates(repo: Repo, remote: Remote) -> bool:
     last_commit_remote = remote.refs[0].commit.committed_date 
 
     return (last_commit_local,last_commit_remote)
-
-
-def Check_Untraced_Files(repo:Repo) -> list[str] | None:
-    """### Inputs:
-        `repo`: Local Git Repository
-
-        Checks if there are any untracked files in the local repository
-
-    ### Returns: 
-    `List[str]` of untracked files if any else `none`
-
-    """
-    UT_FILES = repo.untracked_files
-
-    if len(repo.untracked_files) > 0:
-
-        return UT_FILES
-
-    return None
-
-def Check_Deleted_Files(repo: Repo) -> list[str]:
-    """Checks for deleted files in the local repository.
-    Returns a list of deleted file paths.
-    """
-    deleted_files = []
-    diff = repo.index.diff(None)
-
-    for item in diff:
-        if item.deleted_file:
-            deleted_files.append(item.a_path)
-
-    return deleted_files
 
 
 if __name__ == "__main__":
@@ -103,21 +69,16 @@ if __name__ == "__main__":
     remote = repo.remote("origin")
     print(repo.git.status())
 
+    
     # Fetching and merging changes from Remote Repository
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
-    
-
-
-
-
-    # Both Repositories are in SYNC
+    # Syncing changes in Local and Remote Repository
     if L_commit == R_commit:
         print("Both Local and Remote Repositories are in SYNC")
         pass
 
-    # Local Repository is behind Remote Repository
     elif L_commit < R_commit:
         print("Checking for changes in Remote Repository...")
 
@@ -144,7 +105,7 @@ if __name__ == "__main__":
 
             print("Merged Changes successfully")
     
-    # If Local Repository is ahead of Remote Repository
+    # If Local Repository is ahead of Remote Repository then Commit and Push
     else:
         print("Remote Repository is not up to date.")
         print("\nPushing code remote repo...")
@@ -155,79 +116,28 @@ if __name__ == "__main__":
         print("Pushed code to remote repo")
         print("Continuing with Local Repository...")
     
-    # Checking and adding untraced files to staging area ( including commit )
-    print("Checking for untracked files...")
+    repo.index.add(repo.untracked_files)
+    diff = repo.index.diff(None)
 
 
-    # New files in Local Repository
-    # Modified files in Local Repository
-    UT_FILES = Check_Untraced_Files(repo)
-    Diff_Obj = repo.index.diff(None) # len() can be used
+    for i in diff:
+        if i.deleted_file:
+            repo.index.remove(i.a_path)
+            print("Deleted: " + i.a_path)
+        else:
+            repo.index.add(i.a_path)
+        print(i.a_path + ":" + i.change_type)
 
-
-
-    if UT_FILES is not None:
-
-        print("Untracked files found:")
-        print("\n".join(UT_FILES))
-        print("Pushing untracked files to stagging area...")
-
-        repo.index.add(UT_FILES)
-
-    else:
-        print("No untracked files found.")
-    
-    print("Checking for file modifications...")
-
-
-    # Checking for deleted files
-    deleted_files = Check_Deleted_Files(repo)
-    if deleted_files:
-        print("Deleted files found:")
-        for file in deleted_files:
-            print(f"\t{file}")
-        print("Removing deleted files from staging area...")
-        repo.index.remove(deleted_files)
-    else:
-        print("No deleted files found.")
-
-
-    
-    # Change Commit Message as you wish
-    # MSG = f"Automated Commit: Added {"New Files" if UT_FILES is not None else ""} {"and" if UT_FILES is not None and len(Diff_Obj) > 0 else ""} {"Modified Files" if len(Diff_Obj) > 0 else None}"
-
-    MSG = f"Automated Commit: {' and '.join(filter(None, ['Added New Files' if UT_FILES else None, 'Modified Files' if Diff_Obj else None, 'Deleted Files' if deleted_files else None]))}"
-
-    print(f"Committing changes locally with message: {MSG}")
-    # Modified files in Local Repository
-    if len(Diff_Obj) > 0:
-        print("Modified files found:")
-        Modified_Files = [item.a_path for item in Diff_Obj]
-
-        print("\n".join(Modified_Files))
-
-        print("Pushing modified files to staging area...")
-
-        repo.index.add(Modified_Files)
-    
-
-    if UT_FILES is not None or len(Diff_Obj) > 0:
+    if len(diff) > 0:
         print("Committing changes locally...")
+        repo.index.commit("Auto Commit")
+    else:
+        print("No changes found in local repository")
+
+    L_commit = repo.index.commit("Auto Commit")
 
 
-        repo.index.commit(MSG)
-
-        # status of Local Git Repository
-        print(repo.git.status())
-    
-
-    
-
-
-
-
-    
-    # Again fetching the commit date to check if there are any changes made by above code
+    # Fetching and merging changes from Remote Repository
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
@@ -240,7 +150,7 @@ if __name__ == "__main__":
         print("Files to be committed:\n")
 
         for item in repo.index.diff(remote.refs[0].commit): 
-            print(f"\t{item.a_path} -> {item.b_path}")
+            print(f"\t{item.a_path}")
 
 
         print("\nPushing Code To Remote...")
@@ -254,6 +164,6 @@ if __name__ == "__main__":
 
     
     print("\n\t*** WORK SYNCED SUCCESSFULLY ***\n")
-    # print(args)
+s
 
     
