@@ -1,14 +1,13 @@
-from git import Git,Repo, Remote
+from git import Repo
 
 
-cdw = "S:\\C_Plus_Plus"
 
-repo = Repo(cdw)
-remote = repo.remote("origin")
+repo = Repo("./")
+remote = repo.remote()
+# diff = repo.index.diff(remote.refs[0].commit)
 
-# d = [i[0] for i in repo.index.entries.keys()]
-# d = [i for i in repo.index.diff(remote.refs[0].commit)]
+print(repo.untracked_files)
 
 
-print(len(repo.index.diff(None)))
-# print(d)
+
+repo.index.commit("Test")

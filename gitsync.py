@@ -94,11 +94,6 @@ if __name__ == "__main__":
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
-    
-
-
-
-
     # Syncing changes in Local and Remote Repository
     if L_commit == R_commit:
         print("Both Local and Remote Repositories are in SYNC")

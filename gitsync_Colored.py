@@ -1,7 +1,5 @@
 from git import Repo, Remote, GitCommandError
-import sys,os
-
-
+import sys
 
 
 
@@ -12,32 +10,9 @@ def Commit_Dates(repo: Repo, remote: Remote) -> bool:
     
     
     last_commit_local = repo.head.commit.committed_date
-
-    # fetches latest changes from remote if origin/main doesn't exist
-    if len(remote.refs) == 0:
-        remote.fetch()
     last_commit_remote = remote.refs[0].commit.committed_date 
 
     return (last_commit_local,last_commit_remote)
-
-
-def Check_Untraced_Files(repo:Repo) -> list[str] | None:
-    """### Inputs:
-        `repo`: Local Git Repository
-
-        Checks if there are any untracked files in the local repository
-
-    ### Returns: 
-    `List[str]` of untracked files if any else `none`
-
-    """
-    UT_FILES = repo.untracked_files
-
-    if len(repo.untracked_files) > 0:
-
-        return UT_FILES
-
-    return None
 
 
 if __name__ == "__main__":
@@ -50,11 +25,8 @@ if __name__ == "__main__":
 \tThis script automates the process of committing changes to your local Git repository and 
 \tpushing them to a remote repository. It handles checking for untracked files, modified files,
 \tcommitting changes locally, and ensuring your remote repository is up-to-date.
-\n\033[1;31mIMPORTANT:\033[0m
-In case the remote repository have a different history than the local repository,
-A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories`\033[0m\n
 
-\033[31m\tUsage:\033[0m
+\033[1;32m\tUsage:\033[0m
 \t\t\033[1;33mpython gitsync.py <Local_Repository_Path>\033[0m
 
 \033[1;32m\tParameters:\033[0m
@@ -97,14 +69,10 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
     remote = repo.remote("origin")
     print(repo.git.status())
 
+    
     # Fetching and merging changes from Remote Repository
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
-
-    
-
-
-
 
     # Syncing changes in Local and Remote Repository
     if L_commit == R_commit:
@@ -126,7 +94,7 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
         # If Changes are found then Merge Changes
         if len(Check_Difference) > 0:  
             print("Merging changes...")
-
+            
             # Merging Changes *** Merge --allow-unrelated-histories ***
             # if normal merge is not possible and return status is is 128 then use --allow-unrelated-histories
             try:
@@ -142,78 +110,52 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
         print("Remote Repository is not up to date.")
         print("\nPushing code remote repo...")
 
-        remote.push()   
+        remote.push()
         
 
         print("Pushed code to remote repo")
         print("Continuing with Local Repository...")
     
-    # Checking and adding untraced files to staging area ( including commit )
-    print("Checking for untracked files...")
+
+    
+
+    diff = repo.index.diff(None)
+    flags = {"d":0,"u":len(repo.untracked_files),"m":0} # d = deleted, u = untracked, m = modified
+
+    for i in repo.untracked_files:
+        print(f"\t\033[1;33mUntracked:\033[0m {i}")
+    repo.index.add(repo.untracked_files)
 
 
-    # New files in Local Repository
-    UT_FILES = Check_Untraced_Files(repo)
 
-    # Modified files in Local Repository
-    Diff_Obj = repo.index.diff(None) # len() can be used
+    for i in diff:
+        if i.deleted_file:
+            flags["d"] += 1
+            repo.index.remove(i.a_path)
+            print("\t\033[1;31mDeleted: \033[0m" + i.a_path)
+        else:
+            flags["m"] += 1
+            if i.change_type == "A":
+                print("\t\033[1;32mAdded: \033[0m" + i.a_path)
+            else:
+                print("\t\033[1;32mModified: \033[0m" + i.a_path)
+                repo.index.add(i.a_path)
+        
+
+    msg = "Automatic Commit : " + f"Added {flags["u"]} Files, " if flags["u"] !=0 else "" + "Deleted Files, " if flags["d"] !=0 else "" + "Modified Files " if flags["m"] !=0 else ""
 
 
-    # Change Commit Message as you wish
-    MSG = f"Automated Commit: Added {"New Files" if UT_FILES is not None else ""} {"and" if UT_FILES is not None and len(Diff_Obj) > 0 else ""} {"Modified Files" if len(Diff_Obj) > 0 else None}"
 
-
-    if UT_FILES is not None:
-
-        print("\033[1;31mUntracked files found:\033[0m")
-
-        print("\n".join(UT_FILES))
-        print(*[f"\033[32m\t{item.a_path}\033[0m" for item in UT_FILES], sep="\n")
-
-
-        print("Pushing untracked files to stagging area...")
-
-        repo.index.add(UT_FILES)
+    # Committing Changes
+    if flags["d"] > 0 or flags["u"] > 0 or flags["m"] > 0:
+        print("\nCommitting changes locally...")
+        repo.index.commit("Auto Commit")
 
     else:
-        print("No untracked files found.")
-    
-    print("Checking for file modifications...")
-
-    # Modified files in Local Repository
-    if len(Diff_Obj) > 0:
-
-        print("\033[1;31mModified files found :\033[0m")
-
-        Modified_Files: list[str] = [item.a_path  for item in Diff_Obj if item.change_type == "M"]
-
-        print("\n".join(Modified_Files))
-        print(*[f"\033[32m\t{item}\033[0m" for item in Modified_Files], sep="\n")
-
-
-        print("Pushing modified files to staging area...")
-
-        repo.index.add(Modified_Files)
-                
-    
-
-    if UT_FILES is not None or len(Diff_Obj) > 0:
-        print("Committing changes locally...")
-
-
-        repo.index.commit(MSG)
-
-        # status of Local Git Repository
-        print(repo.git.status())
-    
+        print("No changes found in local repository")
 
     
 
-
-
-
-    
-    # Again fetching the commit date to check if there are any changes made by above code
     Date_of_Commits = Commit_Dates(repo, remote)
     L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
@@ -225,10 +167,9 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
 
         print("Files to be committed:\n")
 
-        # Changes between local and remote repository
-        changes = repo.index.diff(remote.refs[0].commit)
-        for item in changes: 
-            print(f"\033[1;32m\t{item.a_path}\033[0m \033[1;31m ->\033[0m \033[1;32m{item.b_path}\033[0m")
+        for item in repo.index.diff(remote.refs[0].commit): 
+            print(f"\t{item.a_path}")
+
 
         print("\nPushing Code To Remote...")
 
@@ -241,6 +182,5 @@ A merge is done using \033[31m`git merge origin/main --allow-unrelated-histories
 
     
     print("\n\t*** WORK SYNCED SUCCESSFULLY ***\n")
-    # print(args)
 
     
