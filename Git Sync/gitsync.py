@@ -180,6 +180,17 @@ if __name__ == "__main__":
             try:
                 remote.pull()
                 print("Pull successful.")
+                print("Trying to push changes to remote repo...")
+
+                remote.push()
+
+                print("Pushed code to remote repo")
+                print("Continuing with Local Repository...")
+    
+    
+                print("\n\t\033[1;32m*** WORK SYNCED SUCCESSFULLY ***\n\033[0m")
+
+                remote.push()
 
             except Exception as e:
                 print("\033[1mAn error occurred during the push:\n \033[0m", e)
