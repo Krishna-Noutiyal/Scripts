@@ -89,24 +89,31 @@ if __name__ == "__main__":
         
         Check_Difference = repo.index.diff(remote.refs[0].commit)
 
-        # If Changes are found then Merge Changes
-        if len(Check_Difference) > 0:  
-            print("Merging changes...")
-            
-            # Merging Changes *** Merge --allow-unrelated-histories ***
-            # if normal merge is not possible and return status is is 128 then use --allow-unrelated-histories
-            try:
-                repo.git.merge(remote.refs[0])
-            except GitCommandError as e:
-                if e.status == 128:
-                    repo.git.merge(remote.refs[0], '--allow-unrelated-histories')
+        # Merging Changes
+        try:
+            repo.git.merge(remote.refs[0])
+        except GitCommandError as e:
+            if 'conflict' in e.stdout.lower():
+                print("Conflict detected. Please resolve conflicts manually.")
+                sys.exit(1)  # Exit the script to allow manual conflict resolution
+            elif e.status == 128:
+                print("\033[1mUnrelated histories detected.\033[0m \033[1;31mPlease merge manually using `git merge --allow-unrelated-histories` if necessary.\033[0m")
+                sys.exit(1)
+            else:
+                print("\033[1mAn error occurred during the merge:\n \033[0m", e)
+                sys.exit(1)
 
-            print("Merged Changes successfully")
+        print("Merged Changes successfully")
     
     # If Local Repository is ahead of Remote Repository then Commit and Push
     else:
         print("Remote Repository is not up to date.")
         print("\nPushing code remote repo...")
+
+
+        if repo.is_dirty(untracked_files=True):
+            print("\n\033[1;31mUnresolved conflicts detected. Please resolve conflicts manually.\n\033[0m")
+            sys.exit(1)
 
         remote.push()
         
