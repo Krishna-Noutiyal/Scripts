@@ -70,52 +70,6 @@ if __name__ == "__main__":
     remote = repo.remote("origin")
 
     
-    # Fetching and merging changes from Remote Repository
-    Date_of_Commits = Commit_Dates(repo, remote)
-    L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
-
-    # Syncing changes in Local and Remote Repository
-    if L_commit == R_commit:
-        print("Both Local and Remote Repositories are in SYNC")
-        pass
-
-    elif L_commit < R_commit:
-        print("Checking for changes in Remote Repository...")
-
-        print("Remote Repository is up to date")
-        print("Local Repository might be Outdated")
-        print("\nFetching Changes...")
-        print("Fetched Changes successfully")
-        
-        Check_Difference = repo.index.diff(remote.refs[0].commit)
-
-        # If Changes are found then Merge Changes
-        if len(Check_Difference) > 0:  
-            print("Merging changes...")
-            
-            # Merging Changes *** Merge --allow-unrelated-histories ***
-            # if normal merge is not possible and return status is is 128 then use --allow-unrelated-histories
-            try:
-                repo.git.merge(remote.refs[0])
-            except GitCommandError as e:
-                if e.status == 128:
-                    repo.git.merge(remote.refs[0], '--allow-unrelated-histories')
-
-            print("Merged Changes successfully")
-    
-    # If Local Repository is ahead of Remote Repository then Commit and Push
-    else:
-        print("Remote Repository is not up to date.")
-        print("\nPushing code remote repo...")
-
-        remote.push()
-        
-
-        print("Pushed code to remote repo")
-        print("Continuing with Local Repository...")
-    
-
-    
 
     diff = repo.index.diff(None)
     flags = {"d":0,"u":len(repo.untracked_files),"m":0} # d = deleted, u = untracked, m = modified
@@ -153,31 +107,96 @@ if __name__ == "__main__":
     # Committing Changes
     if flags["d"] > 0 or flags["u"] > 0 or flags["m"] > 0:
         print("\nCommitting changes locally...")
+        
+        print("\n\033[1;34mFiles to be committed:\033[0m")
+
+        for item in repo.index.diff(remote.refs[0].commit): 
+            print(f"\t{item.a_path}")
+            
         repo.index.commit(msg)
 
     else:
         print("No changes found in local repository")
 
-    
+    # Fetching and merging changes from Remote Repository
+    Date_of_Commits = Commit_Dates(repo, remote)
+    L_commit, R_commit = Date_of_Commits[0], Date_of_Commits[1]
 
-    L_commit, R_commit = repo.head.commit.committed_date, remote.refs[0].commit.committed_date
-
+    # Syncing changes in Local and Remote Repository
     if L_commit == R_commit:
-        print("No changes found.")
+        print("Both Local and Remote Repositories are in SYNC")
+        pass
+
+    elif L_commit < R_commit:
+        print("Checking for changes in Remote Repository...")
+
+        print("Remote Repository is up to date")
+        print("Local Repository might be Outdated")
+        print("\nFetching Changes...")
+        print("Fetched Changes successfully")
+        
+        Check_Difference = repo.index.diff(remote.refs[0].commit)
+
+        # Merging Changes
+        try:
+            repo.git.merge(remote.refs[0])
+        except GitCommandError as e:
+            if 'conflict' in e.stdout.lower():
+                print("Conflict detected. Please resolve conflicts manually.")
+                sys.exit(1)  # Exit the script to allow manual conflict resolution
+
+
+            elif e.status == 128:
+                print("\033[1mUnrelated histories detected.\033[0m \033[1;31mPlease merge manually using `git merge --allow-unrelated-histories` if necessary.\033[0m")
+                sys.exit(1)
+
+            else:
+                print("\033[1mAn error occurred during the merge:\n \033[0m", e)
+                print("Trying to pull changes from remote repo...")
+
+                try:
+                    remote.pull()
+                except:
+                    print("\033[1mAn error occurred during the pull:\n \033[0m", e)
+                    sys.exit(1)
+
+        print("Merged Changes successfully")
     
+    # If Local Repository is ahead of Remote Repository then Commit and Push
     else:
-        print("Changes found.")
-
-        print("\n\033[1;34mFiles to be committed:\033[0m")
-
-        for item in repo.index.diff(remote.refs[0].commit): 
-            print(f"\t{item.a_path}")
+        print("Remote Repository is not up to date.")
+        print("\nTrying to Push code to remote repo...")
 
 
-        print("\nPushing Code To Remote...")
+        if repo.is_dirty(untracked_files=True):
+            print("\n\033[1;31mUnresolved conflicts detected. Please resolve conflicts manually.\n\033[0m")
+            sys.exit(1)
+
+        elif repo.index.diff(remote.refs[0].commit):
+            # Check for merge conflicts
+            print("Merge conflicts detected.")
+            print("Trying to pull changes from remote repo...")
+            try:
+                remote.pull()
+                print("Pull successful.")
+
+            except Exception as e:
+                print("\033[1mAn error occurred during the push:\n \033[0m", e)
+                print("\033[1m\nResolve Conflicts Manually !!\n \033[0m", e)
+                
+
+        else:
+            print("No merge conflicts detected.")
+            print("Trying to push changes to remote repo...")
+
+
+
         remote.push()
+        
 
-
+        print("Pushed code to remote repo")
+        print("Continuing with Local Repository...")
+    
     
     print("\n\t\033[1;32m*** WORK SYNCED SUCCESSFULLY ***\n\033[0m")
 
