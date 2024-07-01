@@ -23,37 +23,35 @@ if __name__ == "__main__":
 \033[1;34m\t\t********** GIT AUTOMATION SCRIPT **********\033[0m
 
 \033[1;32m\tDescription:\033[0m
-\tThis script automates the process of committing changes to your local Git repository and 
-\tpushing them to a remote repository. It handles checking for untracked files, modified files,
-\tcommitting changes locally, and ensuring your remote repository is up-to-date.
+\tThis script automates the synchronization of changes between your local Git repository and a remote repository. It manages commits, pushes, and resolves conflicts to keep your codebase up-to-date.
 
 \033[1;32m\tUsage:\033[0m
 \t\t\033[1;33mpython gitsync.py <Local_Repository_Path>\033[0m
 
 \033[1;32m\tParameters:\033[0m
-\t\t<Repository_Path> : The path to your local Git repository.
-
-\033[1;32m\tExample:\033[0m
-\t\t\033[1;33mpython gitsync.py "S:/C_Plus_Plus"\033[0m
+\t\t<Local_Repository_Path> : Path to your local Git repository.
 
 \033[1;32m\tFunctionality:\033[0m
-\t1. Checks if the local repository is ahead of the remote repository.
-\t   - If not, it fetches and merges changes from the remote repository.
-\t   - If yes, it pushes the local changes to the remote repository.
-\t2. Checks for untracked files in the local repository and stages them for commit.
-\t3. Checks for any modifications in tracked files.
-\t4. Commits changes locally with a user-provided message and pushes them to the remote repository.
-\t5. Displays the status of the local Git repository after synchronization.
+\t- Checks if the local repository is ahead of the remote repository.
+\t- Fetches and merges changes from the remote repository if local is behind.
+\t- Automatically stages untracked files for commit.
+\t- Manages modifications in tracked files, staging them for commit.
+\t- Handles deletions of tracked files.
+\t- Commits changes locally with an automatic message.
+\t- Displays the synchronized status of the local Git repository.
 
 \033[1;32m\tOutput:\033[0m
-\t- Messages indicating the status of the repository, any untracked files found, 
-\t  and the result of commit and push operations.
+\t- Provides status updates on repository synchronization.
+\t- Alerts about untracked, modified, and deleted files staged for commit.
+\t- Reports the outcome of commit and push operations.
 
-\033[1;32m\tNote:\033[0m
-\t- Ensure you have the necessary permissions to push changes to the remote repository.
-\t- Make sure your working directory is clean and all necessary changes are staged before running the script.
+\033[1;32m\tNotes:\033[0m
+\t- \033[1mMake sure the commit histories of both repositories match before running the scripts\033[0m
+\t- Ensure permissions allow pushing changes to the remote repository.
+\t- Keep the working directory clean with staged changes before running the script.
 
-\033[1;34m\t********** END OF HELP MESSAGE **********\033[0m
+\033[1;34m\n\t\t********** END OF HELP MESSAGE **********\033[0m
+
 """
 
     args = sys.argv
