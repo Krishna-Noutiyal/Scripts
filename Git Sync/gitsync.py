@@ -173,7 +173,7 @@ if __name__ == "__main__":
             print("\n\033[1;31mUnresolved conflicts detected. Please resolve conflicts manually.\n\033[0m")
             sys.exit(1)
 
-        elif repo.index.diff(remote.refs[0].commit) > 0:
+        elif len(repo.index.diff(remote.refs[0].commit)) > 0:
             # Check for merge conflicts
             print("Merge conflicts detected.")
             print("Trying to pull changes from remote repo...")
