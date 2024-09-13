@@ -6,42 +6,39 @@ import threading
 # ANSI color codes
 RESET = "\033[0m"
 BOLD = "\033[1m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
-BLUE = "\033[94m"
-CYAN = "\033[96m"
-
-# Help message
+BLUE = "\033[1;34m"
+GREEN = "\033[1;32m"
+YELLOW = "\033[1;33m"
+RED = "\033[1;31m"
 HELP_MESSAGE = f"""
-{BOLD}{CYAN}********** MULTIPLE GIT REPOSITORY SYNCHRONIZATION SCRIPT **********{RESET}
+{BLUE}\t\t********** MULTIPLE GIT REPOSITORY SYNCHRONIZATION SCRIPT **********{RESET}
 
-{BOLD}{CYAN}Description:{RESET}
-This script automates the synchronization of multiple Git repositories using the gitsync.py script. 
-It executes gitsync.py for each repository listed in a text file and manages up to 4 repositories in parallel.
+{GREEN}\tDescription:{RESET}
+\tThis script automates the synchronization of multiple Git repositories using the gitsync.py script. 
+\tIt executes gitsync.py for each repository listed in a text file and manages up to 4 repositories in parallel.
 
-{BOLD}{CYAN}Usage:{RESET}
-        {YELLOW}python multisync.py <Path_to_gitsync.py> <Path_to_txt_file_with_repos>{RESET}
+{GREEN}\tUsage:{RESET}
+\t\t{YELLOW}python multisync.py <Path_to_gitsync.py> <Path_to_txt_file_with_repos>{RESET}
 
-{BOLD}{CYAN}Parameters:{RESET}
-        {YELLOW}<Path_to_gitsync.py>{RESET} : Path to the gitsync.py script.
-        {YELLOW}<Path_to_txt_file_with_repos>{RESET} : Path to a text file containing the paths to local Git repositories.
+{GREEN}\tParameters:{RESET}
+\t\t<Path_to_gitsync.py> : Path to the gitsync.py script.
+\t\t<Path_to_txt_file_with_repos> : Path to a text file containing the paths to local Git repositories.
 
-{BOLD}{CYAN}Functionality:{RESET}
-- Reads the text file to get the list of repository paths.
-- Executes gitsync.py for each repository.
-- Runs 4 repositories at a time using threading for parallel execution.
-- Provides status updates for each repository as the synchronization progresses.
+{GREEN}\tFunctionality:{RESET}
+\t- Reads the text file to get the list of repository paths.
+\t- Executes gitsync.py for each repository.
+\t- Runs 4 repositories at a time using threading for parallel execution.
+\t- Provides status updates for each repository as the synchronization progresses.
 
-{BOLD}{CYAN}Output:{RESET}
-- Displays status updates on synchronization for each repository.
-- Logs the completion status ({GREEN}success{RESET}/{RED}failure{RESET}) for each gitsync.py execution.
+{GREEN}\tOutput:{RESET}
+\t- Displays status updates on synchronization for each repository.
+\t- Logs the completion status ({GREEN}success{RESET}/{RED}failure{RESET}) for each gitsync.py execution.
 
-{BOLD}{CYAN}Notes:{RESET}
-- Ensure that gitsync.py is accessible and executable from the provided path.
-- Make sure the text file with repositories contains valid paths to Git repositories.
+{GREEN}\tNotes:{RESET}
+\t- {BOLD}Ensure that gitsync.py is accessible and executable from the provided path.{RESET}
+\t- Make sure the text file with repositories contains valid paths to Git repositories.
 
-{BOLD}{CYAN}********** END OF HELP MESSAGE **********{RESET}
+{BLUE}\n\t\t********** END OF HELP MESSAGE **********{RESET}
 """
 
 
@@ -91,7 +88,8 @@ def process_repos_in_threads(gitsync_path, repo_paths, max_threads=4):
 
 
 # Main function
-def main():
+if __name__ == "__main__":
+
     if len(sys.argv) != 3:
         print(HELP_MESSAGE)
         sys.exit(1)
@@ -115,7 +113,11 @@ def main():
 
     # Read the text file to get the repository paths
     with open(txt_file_path, "r") as file:
-        repo_paths = [(line.strip()).replace("'","").replace('"','') for line in file if line.strip()]
+        repo_paths = [
+            (line.strip()).replace("'", "").replace('"', "")
+            for line in file
+            if line.strip()
+        ]
 
     if not repo_paths:
         print(
@@ -125,7 +127,3 @@ def main():
 
     # Run gitsync.py for each repository using threading
     process_repos_in_threads(gitsync_path, repo_paths)
-
-
-if __name__ == "__main__":
-    main()
