@@ -11,8 +11,19 @@ RED = "\033[1;31m"
 
 
 def Commit_Dates(repo: Repo, remote: Remote) -> list[int]:
-    """`Return`: `Tuple(int)` a tuple of two integer elements representation of commit date.
-    Where the first element is `Local_Commit_Date` and the second element is `Remote_Commit_Date`
+    """Get the commit dates for the local and remote repositories
+
+    This function will return a tuple of two integers representing the
+    commit dates for the local and remote repositories. The first element
+    of the tuple is the commit date for the local repository, and the
+    second element is the commit date for the remote repository.
+
+    Args:
+        repo: A gitpython Repo object pointing to the local repository.
+        remote: A gitpython Remote object pointing to the remote repository.
+
+    Returns:
+        list: A list of two integers representing the commit dates for the local and remote repositories. `[last_commit_local, last_commit_remote]`
     """
 
     remote.fetch()

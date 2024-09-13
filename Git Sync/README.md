@@ -13,6 +13,8 @@ Both `gitsync.py` and `multisync.py` files are designed in such a way that it is
 
 ### `gitsync.py`:
 
+![gitsync](./assets/gitsync.png)
+
 - **Automated Sync**: Synchronizes local and remote repositories.
 - **Conflict Handling**: Alerts you about conflicts and prompts for manual resolution.
 - **Untracked and Modified Files**: Automatically stages untracked and modified files.
@@ -20,6 +22,8 @@ Both `gitsync.py` and `multisync.py` files are designed in such a way that it is
 - **Error Handling**: Captures and manages Git-related errors.
 
 ### `multisync.py`:
+
+![gitsync](./assets/multisync.png)
 
 - **Multiple Repository Sync**: Syncs multiple repositories listed in a text file.
 - **Parallel Execution**: Uses threading to synchronize up to 4 repositories simultaneously.
