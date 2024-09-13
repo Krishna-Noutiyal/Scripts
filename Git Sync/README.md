@@ -31,7 +31,9 @@ Before running the `gitsync.py` or `multisync.py` scripts, please ensure the fol
 
 1.  **Upstream is Set**: Make sure that an upstream branch is configured for all the local Git repositories. This can be done using:
 
-````bash
+For setting the upstream to `main`:
+
+```bash
  git branch --set-upstream-to=origin/main
  ```
 
@@ -56,7 +58,7 @@ Before running the `gitsync.py` or `multisync.py` scripts, please ensure the fol
 
 4.  **Branch Restriction**: Currently, the `gitsync.py` script only works on the `main` or `master` branch by default. If your repository uses a different branch (e.g., `develop`), the script will not function correctly without modifications. Please ensure your primary branch is either `main` or `master`, or adjust the script as needed.
 
-````
+
 
 ## Usage :wrench:
 
