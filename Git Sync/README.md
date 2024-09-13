@@ -7,7 +7,7 @@ This repository contains two Python scripts: `gitsync.py` and `multisync.py`.
 - **`gitsync.py`** automates the synchronization of a single Git repository, handling commits, pushes, and fetches while managing conflicts.
 - **`multisync.py`** extends the functionality of `gitsync.py` by synchronizing multiple repositories in parallel, using threading to manage multiple repositories at once.
 
-Both the files are designed in such a way that it is really easy to automate the syncing of repositories using these scripts in Windows and linux.
+Both `gitsync.py` and `multisync.py` files are designed in such a way that it is really easy to automate the syncing of repositories using these scripts in Windows and Linux. **You can very easily Schedule the running of these scripts in Windows 🖥️ or Linux 🐧.**
 
 ## Features :rocket:
 
@@ -217,7 +217,7 @@ python3 multisync.py "/home/username/gitsync.py" "/home/username/repos.txt"
 
 1. **Customize Branch Selection**:
    - **Enhance `gitsync.py`**: Implement functionality to allow users to specify which branch to sync with the remote repository, rather than defaulting to `main` or `master`.
-   - **Update `multisync.py`**: Ensure that `multisync.py` can pass branch selection options to `gitsync.py` for consistent behavior across multiple repositories.
+   - **Update `multisync.py`**: Ensure that `multisync.py` can pass branch selection options to `gitsync.py` for consistent behaviour across multiple repositories.
 
 2. **Customize Number of Threads in `multisync.py`**:
    - Add an option to `multisync.py` to allow users to specify the number of threads to use for parallel repository synchronization. This will provide flexibility depending on the system’s capabilities and user needs.
@@ -235,4 +235,4 @@ python3 multisync.py "/home/username/gitsync.py" "/home/username/repos.txt"
 This project is licensed under the GNU General Public License - see the [LICENSE](../LICENSE) file for details.
 
 ---
-````
+
