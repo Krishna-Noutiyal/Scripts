@@ -25,7 +25,7 @@ Both the files are designed in such a way that it is really easy automate the sy
 - **Parallel Execution**: Uses threading to synchronize up to 4 repositories simultaneously.
 - **Flexible Repository Management**: Automates the sync process for multiple Git repositories scattered across your system.
 
-<span style="color:red; font-weight:bold;">## Important Git Repo Initialization :warning:</span>
+## <span style="color:red; font-weight:bold;"> Important Git Repo Initialization :warning:</span>
 
 Before running the `gitsync.py` or `multisync.py` scripts, please ensure the following:
 
