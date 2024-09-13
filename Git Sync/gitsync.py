@@ -29,7 +29,8 @@ if __name__ == "__main__":
 {BLUE}\t\t********** GIT AUTOMATION SCRIPT **********{RESET}
 
 {GREEN}\tDescription:{RESET}
-\tThis script automates the synchronization of changes between your local Git repository and a remote repository. It manages commits, pushes, and resolves conflicts to keep your codebase up-to-date.
+\tThis script automates the synchronization of changes between your local Git repository and a remote repository. 
+\tIt manages commits, pushes, and resolves conflicts to keep your codebase up-to-date.
 
 {GREEN}\tUsage:{RESET}
 \t\t{YELLOW}python gitsync.py <Local_Repository_Path>{RESET}
