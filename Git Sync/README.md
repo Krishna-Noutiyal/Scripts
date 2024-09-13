@@ -30,28 +30,29 @@ Both the files are designed in such a way that it is really easy automate the sy
 Before running the `gitsync.py` or `multisync.py` scripts, please ensure the following:
 
 1.  **Upstream is Set**: Make sure that an upstream branch is configured for all the local Git repositories. This can be done using:
-2.  ```bash
-    git branch --set-upstream-to=origin/main
-    ```
 
-    or for `master`:
+````bash
+ git branch --set-upstream-to=origin/main
+ ```
 
-    ```bash
-    git branch --set-upstream-to=origin/master
-    ```
+ or for `master`:
+
+ ```bash
+ git branch --set-upstream-to=origin/master
+ ```
 
 3.  **No Commit History Errors**: Ensure that there are no commit history mismatches between the local and remote branches. If there are any issues, such as:
 
-    - Merge conflicts
-    - Diverging commit histories
+ - Merge conflicts
+ - Diverging commit histories
 
-    Resolve these issues **before** running the scripts. You can do this by pulling the latest changes from the remote repository and resolving any conflicts manually:
+ Resolve these issues **before** running the scripts. You can do this by pulling the latest changes from the remote repository and resolving any conflicts manually:
 
-    ```bash
-    git pull origin main
-    ```
+ ```bash
+ git pull origin main
+ ```
 
-    If needed, use Git merge tools to handle conflicts.
+ If needed, use Git merge tools to handle conflicts.
 
 4.  **Branch Restriction**: Currently, the `gitsync.py` script only works on the `main` or `master` branch by default. If your repository uses a different branch (e.g., `develop`), the script will not function correctly without modifications. Please ensure your primary branch is either `main` or `master`, or adjust the script as needed.
 
@@ -71,6 +72,8 @@ Before running the `gitsync.py` or `multisync.py` scripts, please ensure the fol
 3. Install required dependencies using:
    ```bash
    pip install -r requirements.txt
+   ```
+
 ````
 
 ### Running the Scripts :arrow_forward:
@@ -231,3 +234,4 @@ python3 multisync.py "/home/username/gitsync.py" "/home/username/repos.txt"
 This project is licensed under the GNU General Public License - see the [LICENSE](../LICENSE) file for details.
 
 ---
+````
