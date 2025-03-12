@@ -1,3 +1,7 @@
+# The program works for text without space
+# Need to this resolve problem 
+
+
 alphabets = [
     "a",
     "b",
@@ -107,10 +111,10 @@ def encrypt_pair(pair: str, matrix: list[list]) -> str:
     al1, al2 = search_matrix(pair, matrix)
     char1_row, char1_col = al1[0], al1[1]
     char2_row, char2_col = al2[0], al2[1]
-    
-    if al1[0] == [-1,-1] :
+
+    if al1[0] == [-1, -1]:
         pass
-    elif al2[0] == [-1,-1]:
+    elif al2[0] == [-1, -1]:
         pass
     elif al1[0] == al2[0]:
         enc_char1 = matrix[char1_row][(char1_col + 1) % 5]
@@ -125,6 +129,61 @@ def encrypt_pair(pair: str, matrix: list[list]) -> str:
     return enc_char1 + enc_char2
 
 
+def create_pairs(text: str) -> list[str]:
+    """
+    Splits the input text into pairs of characters. If the text has an odd number of characters,
+    the last character is paired with 'j'.
+    Args:
+        text (str): The input text to be split into pairs.
+    Returns:
+        list[str]: A list of character pairs from the input text.
+    """
+
+    pair_list = []
+    i = 0
+    while i < len(text):
+        if i + 1 < len(text):
+            pair_list.append(text[i] + text[i + 1])
+            i += 2
+        else:
+            pair_list.append(text[i] + "j")
+            i += 1
+
+    return pair_list
+
+
+def decrypt_pair(pair: str, matrix: list[list]) -> str:
+    """This function decrypts a pair of characters using the Playfair Cipher
+    algorithm. It takes a pair of encrypted characters and a 5x5 matrix as input.
+
+    Args:
+        pair (str): This is a pair of encrypted characters eg. "bd","ar" etc.
+        matrix (list[list]): A 5x5 matrix created by the create_matrix function
+
+    Returns:
+        str: A pair of decrypted characters eg. "bd"->"ab","ar"->"sa" etc.
+    """
+    al1, al2 = search_matrix(pair, matrix)
+    char1_row, char1_col = al1[0], al1[1]
+    char2_row, char2_col = al2[0], al2[1]
+
+    if al1[0] == [-1, -1]:
+        pass
+    elif al2[0] == [-1, -1]:
+        pass
+    elif al1[0] == al2[0]:
+        dec_char1 = matrix[char1_row][(char1_col - 1) % 5]
+        dec_char2 = matrix[char2_row][(char2_col - 1) % 5]
+    elif al1[1] == al2[1]:
+        dec_char1 = matrix[(char1_row - 1) % 5][char1_col]
+        dec_char2 = matrix[(char2_row - 1) % 5][char2_col]
+    else:
+        dec_char1 = matrix[char2_row][char1_col]
+        dec_char2 = matrix[char1_row][char2_col]
+
+    return dec_char1 + dec_char2
+
+
 def print_matrix(matrix) -> None:
     """This function prints the matrix in a readable format
 
@@ -137,7 +196,7 @@ def print_matrix(matrix) -> None:
     return None
 
 
-def get_cipher(text: str,matrix:list[list[int]]) -> str:
+def get_cipher(text: str, matrix: list[list[int]]) -> str:
     """Converts plain text into cypher text
 
     Args:
@@ -146,26 +205,50 @@ def get_cipher(text: str,matrix:list[list[int]]) -> str:
     Returns:
         str: The encrypted string
     """
+    # Create pairs from the string
+    pair_list = create_pairs(text)
 
-    pair_list = list(
-        map(
-            lambda x: x if len(x) == 2 else x[0] + 'j' + x[1] if len(x) == 1 else x + 'j',
-            [text[i] + (text[i + 1]) for i in range(0, len(text) - 1, 2)],
-        )
-    )
-
-    encrypted_pair_list = [encrypt_pair(i,matrix) for i in pair_list]
+    encrypted_pair_list = [encrypt_pair(i, matrix) for i in pair_list]
     return "".join(encrypted_pair_list)
+
+
+def get_plaintext(cipher_text: str, matrix: list[list[int]]) -> str:
+    """Converts cipher text into plain text
+
+    Args:
+        cipher_text (str): The string to be decrypted
+        matrix (list[list[int]]) : A matrix created by create_matrix function
+    Returns:
+        str: The decrypted string
+    """
+    # Create pairs from the cipher text
+    pair_list = create_pairs(cipher_text)
+
+    decrypted_pair_list = [decrypt_pair(i, matrix) for i in pair_list]
+    return "".join(decrypted_pair_list)
+
 
 
 key = "krishna"
 
 matrix = create_matrix(key, alphabets)
-
+pair = "ab"
+enc_pair = encrypt_pair(pair, matrix)
 print_matrix(matrix)
 
-print(get_cipher("hello",matrix))
+
+text = "Hello "
+
+cipher = get_cipher(text,matrix)
+
+plaintext = get_plaintext(cipher,matrix)
+
+print(f"{text} -> {cipher}")
+print(f"{cipher} -> {plaintext}")
+
+# print(get_cipher("hello", matrix))
 # print("ab : ",search_matrix("ab", matrix))
-# print("ab : ",encrypt_pair("ab", matrix))
+# print("ab : ", enc_pair)
+# print(f"{enc_pair} : ", decrypt_pair(enc_pair, matrix))
 # print("mr : ",encrypt_pair("mr", matrix))
 # print("mv : ",encrypt_pair("mv", matrix))
