@@ -229,7 +229,7 @@ def get_plaintext(cipher_text: str, matrix: list[list[int]]) -> str:
 
 
 
-key = "krishna"
+key = "kashish"
 
 matrix = create_matrix(key, alphabets)
 pair = "ab"
@@ -237,7 +237,7 @@ enc_pair = encrypt_pair(pair, matrix)
 print_matrix(matrix)
 
 
-text = "Hello "
+text = "arpit"
 
 cipher = get_cipher(text,matrix)
 
