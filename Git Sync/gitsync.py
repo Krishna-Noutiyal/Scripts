@@ -102,14 +102,14 @@ if __name__ == "__main__":
         if i.deleted_file:
             flags["d"] += 1
             repo.index.remove(i.a_path)
-            print(f"\t{RED}Deleted: {RESET}" + i.a_path)
+            print(f"\t{RED}Deleted: {RESET}" + i.a_path if i.a_path else "")
         else:
             flags["m"] += 1
             if i.change_type == "A":
-                print(f"\t{GREEN}Added: {RESET}" + i.a_path)
+                print(f"\t{GREEN}Added: {RESET}" + i.a_path if i.a_path else "")
             else:
-                print(f"\t{GREEN}Modified: {RESET}" + i.a_path)
-                repo.index.add(i.a_path)
+                print(f"\t{GREEN}Modified: {RESET}" + i.a_path if i.a_path else "")
+                repo.index.add(i.a_path if i.a_path else "")
 
     # Generating the commit message
     msg = "Automatic Commit : "
