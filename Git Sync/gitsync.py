@@ -1,6 +1,5 @@
 from git import Repo, Remote, GitCommandError, FetchInfo
 import sys
-import argparse
 
 # ANSI color codes
 RESET = "\033[0m"
@@ -33,24 +32,6 @@ def Commit_Dates(repo: Repo, remote: Remote) -> list[int]:
     last_commit_remote = remote.refs[0].commit.committed_date
 
     return [last_commit_local, last_commit_remote]
-
-
-def verify_commits_gpg(repo: Repo, commits: list, required_signer: str | None = None) -> list[tuple[str, str]]:
-    """Verify list of commits' GPG signatures.
-
-    Returns a list of tuples (commit_sha, reason) for commits that failed verification.
-    """
-    failed = []
-    for commit in commits:
-        try:
-            repo.git.verify_commit(commit.hexsha)
-            if required_signer:
-                out = repo.git.show("--show-signature", "-s", commit.hexsha)
-                if required_signer not in out:
-                    failed.append((commit.hexsha, "Signer mismatch"))
-        except GitCommandError as e:
-            failed.append((commit.hexsha, str(e)))
-    return failed
 
 
 if __name__ == "__main__":
@@ -91,31 +72,13 @@ if __name__ == "__main__":
 
 """
 
-    # Set up CLI flags and parse arguments. Use the original HELP text for more detail.
-    parser = argparse.ArgumentParser(
-        description="GIT AUTOMATION SCRIPT",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=HELP,
-    )
-    parser.add_argument("path", help="Path to your local Git repository")
-    parser.add_argument(
-        "--require-signature",
-        "-s",
-        dest="require_signature",
-        action="store_true",
-        help="Require git commits to have valid GPG signatures (script will abort on invalid/unsigned commits).",
-    )
-    parser.add_argument(
-        "--required-signer",
-        "-k",
-        dest="required_signer",
-        help="(Optional) Require GPG signatures to contain this signer name/ID (partial match OK).",
-    )
-    parsed_args = parser.parse_args()
+    args = sys.argv
 
-    DIR = parsed_args.path
-    REQUIRE_SIGNATURE = parsed_args.require_signature
-    REQUIRED_SIGNER = parsed_args.required_signer
+    if len(args) < 2:
+        print(HELP)
+        exit()
+
+    DIR = args[1]
     repo = Repo(DIR)
     remote = repo.remote("origin")
 
@@ -139,14 +102,14 @@ if __name__ == "__main__":
         if i.deleted_file:
             flags["d"] += 1
             repo.index.remove(i.a_path)
-            print(f"\t{RED}Deleted: {RESET}" + i.a_path if i.a_path else "")
+            print(f"\t{RED}Deleted: {RESET}" + i.a_path)
         else:
             flags["m"] += 1
             if i.change_type == "A":
-                print(f"\t{GREEN}Added: {RESET}" + i.a_path if i.a_path else "")
+                print(f"\t{GREEN}Added: {RESET}" + i.a_path)
             else:
-                print(f"\t{GREEN}Modified: {RESET}" + i.a_path if i.a_path else "")
-                repo.index.add(i.a_path if i.a_path else "")
+                print(f"\t{GREEN}Modified: {RESET}" + i.a_path)
+                repo.index.add(i.a_path)
 
     # Generating the commit message
     msg = "Automatic Commit : "
@@ -190,16 +153,6 @@ if __name__ == "__main__":
 
         # Merging Changes
         try:
-            # If signature verification is enabled, check remote commits before merging
-            if REQUIRE_SIGNATURE:
-                remote_commits = list(repo.iter_commits(f"{repo.head.commit.hexsha}..{remote.refs[0].commit.hexsha}"))
-                failed = verify_commits_gpg(repo, remote_commits, REQUIRED_SIGNER)
-                if failed:
-                    print(f"{RED}Remote commits failed GPG verification:{RESET}")
-                    for c, reason in failed:
-                        print(f"\t{YELLOW}{c}{RESET} - {reason}")
-                    sys.exit(1)
-
             repo.git.merge(remote.refs[0])
         except GitCommandError as e:
             if "conflict" in e.stdout.lower():
@@ -219,15 +172,6 @@ if __name__ == "__main__":
                 print("Trying to pull changes from remote repo...")
 
                 try:
-                    # If signature verification is enabled, verify remote commits before pulling
-                    if REQUIRE_SIGNATURE:
-                        remote_commits = list(repo.iter_commits(f"{repo.head.commit.hexsha}..{remote.refs[0].commit.hexsha}"))
-                        failed = verify_commits_gpg(repo, remote_commits, REQUIRED_SIGNER)
-                        if failed:
-                            print(f"{RED}Remote commits failed GPG verification:{RESET}")
-                            for c, reason in failed:
-                                print(f"\t{YELLOW}{c}{RESET} - {reason}")
-                            sys.exit(1)
                     remote.pull()
                 except:
                     print(f"{BOLD}An error occurred during the pull:\n {RESET}", e)
@@ -251,26 +195,10 @@ if __name__ == "__main__":
             print("Merge conflicts detected.")
             print("Trying to pull changes from remote repo...")
             try:
-                if REQUIRE_SIGNATURE:
-                    remote_commits = list(repo.iter_commits(f"{repo.head.commit.hexsha}..{remote.refs[0].commit.hexsha}"))
-                    failed = verify_commits_gpg(repo, remote_commits, REQUIRED_SIGNER)
-                    if failed:
-                        print(f"{RED}Remote commits failed GPG verification:{RESET}")
-                        for c, reason in failed:
-                            print(f"\t{YELLOW}{c}{RESET} - {reason}")
-                        sys.exit(1)
                 remote.pull()
                 print("Pull successful.")
                 print("Trying to push changes to remote repo...")
 
-                if REQUIRE_SIGNATURE:
-                    local_commits = list(repo.iter_commits(f"{remote.refs[0].commit.hexsha}..{repo.head.commit.hexsha}"))
-                    failed = verify_commits_gpg(repo, local_commits, REQUIRED_SIGNER)
-                    if failed:
-                        print(f"{RED}Local commits failed GPG verification:{RESET}")
-                        for c, reason in failed:
-                            print(f"\t{YELLOW}{c}{RESET} - {reason}")
-                        sys.exit(1)
                 remote.push()
 
                 print("Pushed code to remote repo")
@@ -278,14 +206,6 @@ if __name__ == "__main__":
 
                 print(f"\n\t{GREEN}*** WORK SYNCED SUCCESSFULLY ***\n{RESET}")
 
-                if REQUIRE_SIGNATURE:
-                    local_commits = list(repo.iter_commits(f"{remote.refs[0].commit.hexsha}..{repo.head.commit.hexsha}"))
-                    failed = verify_commits_gpg(repo, local_commits, REQUIRED_SIGNER)
-                    if failed:
-                        print(f"{RED}Local commits failed GPG verification:{RESET}")
-                        for c, reason in failed:
-                            print(f"\t{YELLOW}{c}{RESET} - {reason}")
-                        sys.exit(1)
                 remote.push()
 
             except Exception as e:
